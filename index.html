@@ -11,16 +11,20 @@
         .container { max-width: 1200px; margin: 0 auto; }
         header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 30px; }
         
-        /* Grid swapped: Duty (2fr) now comes first, Announcements (1fr) second */
+        /* Layout: Announcements (2fr) Left, Duty (1fr) Right */
         .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
         
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
         h2 { font-size: 18px; margin-top: 0; display: flex; align-items: center; gap: 10px; color: var(--accent-blue); }
-        .announcement-item { padding: 15px; border-left: 4px solid var(--accent-blue); background: rgba(88, 166, 255, 0.1); margin-bottom: 15px; border-radius: 4px; }
         
+        /* Larger Announcement Items for Visibility */
+        .announcement-item { padding: 20px; border-left: 5px solid var(--accent-blue); background: rgba(88, 166, 255, 0.08); margin-bottom: 20px; border-radius: 6px; }
+        .announcement-item strong { font-size: 18px; display: block; margin-bottom: 8px; }
+        .announcement-item p { font-size: 15px; line-height: 1.5; margin: 10px 0; }
+
         .summary-section { margin-bottom: 20px; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 6px; }
-        .shift-header { color: var(--accent-blue); font-weight: bold; font-size: 14px; border-bottom: 1px solid var(--border-color); margin-bottom: 8px; padding-bottom: 4px; }
-        .person-name { font-size: 14px; display: block; line-height: 1.4; }
+        .shift-header { color: var(--accent-blue); font-weight: bold; font-size: 13px; border-bottom: 1px solid var(--border-color); margin-bottom: 8px; padding-bottom: 4px; }
+        .person-name { font-size: 13px; display: block; line-height: 1.4; }
 
         .controls { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
         button#refresh-btn { background: #21262d; color: var(--accent-blue); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: 0.3s; font-weight: 600; }
@@ -52,13 +56,13 @@
 
     <div class="grid">
         <div class="card">
-            <h2><i class="fas fa-list-alt"></i> CNOC Duty For Today</h2>
-            <div id="duty-summary-container" class="loading">Loading summary...</div>
+            <h2><i class="fas fa-bullhorn"></i> Important Announcements</h2>
+            <div id="announcements-list" class="loading">Fetching critical updates...</div>
         </div>
 
         <div class="card">
-            <h2><i class="fas fa-bullhorn"></i> Announcements</h2>
-            <div id="announcements-list" class="loading">Fetching updates...</div>
+            <h2><i class="fas fa-list-alt"></i> Duty For Today</h2>
+            <div id="duty-summary-container" class="loading">Loading roster...</div>
         </div>
     </div>
 </div>
@@ -85,11 +89,11 @@
             const announcements = await annRes.json();
             const dutyData = await dutyRes.json();
 
-            // RENDER ANNOUNCEMENTS
+            // RENDER ANNOUNCEMENTS - Larger font for primary action
             document.getElementById('announcements-list').innerHTML = announcements.length ? announcements.map(a => `
                 <div class="announcement-item">
-                    <strong>${a.Title || 'Alert'}</strong><br>
-                    <p style="margin: 5px 0;">${a.Message || ''}</p>
+                    <strong>${a.Title || 'Alert'}</strong>
+                    <p>${a.Message || ''}</p>
                     <small style="color:#8b949e;">Posted by: ${a['Posted By'] || 'Admin'}</small>
                 </div>
             `).join('') : "No active announcements.";
@@ -101,7 +105,7 @@
             });
 
             if (!todayDuty) {
-                summaryContainer.innerHTML = "No roster found for today.";
+                summaryContainer.innerHTML = "No roster found.";
                 countDisplay.innerHTML = "";
             } else {
                 const groups = {};
@@ -116,40 +120,34 @@
                     }
                 });
 
-                countDisplay.innerHTML = `<span class="duty-count-pill">${activeCount} Active on Duty</span>`;
+                countDisplay.innerHTML = `<span class="duty-count-pill">${activeCount} Active</span>`;
                 
-                if (activeCount === 0) {
-                    summaryContainer.innerHTML = "No active shifts found for today.";
-                } else {
-                    const shiftOrder = ["6:00AM-6:00PM", "8:30AM-5:30PM", "7:00AM-4:00PM"];
-                    const sortedShifts = Object.keys(groups).sort((a, b) => {
-                        let idxA = shiftOrder.indexOf(a);
-                        let idxB = shiftOrder.indexOf(b);
-                        if (idxA === -1) idxA = 99;
-                        if (idxB === -1) idxB = 99;
-                        return idxA - idxB;
-                    });
+                const shiftOrder = ["6:00AM-6:00PM", "8:30AM-5:30PM", "7:00AM-4:00PM"];
+                const sortedShifts = Object.keys(groups).sort((a, b) => {
+                    let idxA = shiftOrder.indexOf(a);
+                    let idxB = shiftOrder.indexOf(b);
+                    if (idxA === -1) idxA = 99;
+                    if (idxB === -1) idxB = 99;
+                    return idxA - idxB;
+                });
 
-                    summaryContainer.innerHTML = sortedShifts.map(shiftTime => `
-                        <div class="summary-section">
-                            <div class="shift-header"><i class="far fa-clock"></i> ${shiftTime}</div>
-                            ${groups[shiftTime].map(p => `
-                                <div style="margin-bottom: 12px; padding-left: 10px;">
-                                    <div class="person-name" style="font-weight: bold; font-size: 14px;">${p.name}</div>
-                                    <div style="font-size: 11px; color: #8b949e; margin-top: 1px;">
-                                        ${p.position} | ${p.mobile}
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `).join('');
-                }
+                summaryContainer.innerHTML = sortedShifts.map(shiftTime => `
+                    <div class="summary-section">
+                        <div class="shift-header"><i class="far fa-clock"></i> ${shiftTime}</div>
+                        ${groups[shiftTime].map(p => `
+                            <div style="margin-bottom: 10px;">
+                                <div class="person-name" style="font-weight: bold;">${p.name}</div>
+                                <div style="font-size: 10px; color: #8b949e;">${p.position} | ${p.mobile}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `).join('');
             }
             
-            updateText.innerText = "Last updated: " + new Date().toLocaleTimeString();
+            updateText.innerText = "Last synced: " + new Date().toLocaleTimeString();
         } catch (e) {
             console.error(e);
-            summaryContainer.innerHTML = "Sync Error. Check your App Script Deployment.";
+            summaryContainer.innerHTML = "Sync Error.";
         } finally {
             btn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
             btn.disabled = false;
