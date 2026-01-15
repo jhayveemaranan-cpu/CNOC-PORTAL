@@ -1,118 +1,162 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>NOC Portal</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNOC Operations Portal</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --text-main: #c9d1d9;
+            --accent-blue: #58a6ff;
+            --status-green: #238636;
+            --border-color: #30363d;
+        }
 
-<style>
-body { font-family: Arial; padding: 20px; }
-section { margin-bottom: 30px; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
 
-.announcement {
-  border-left: 5px solid #999;
-  padding: 15px;
-  background: #f9f9f9;
-  margin-bottom: 10px;
-}
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-.HIGH { border-color: red; }
-.MEDIUM { border-color: orange; }
-.LOW { border-color: green; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-th, td {
-  border: 1px solid #ccc;
-  padding: 5px;
-  text-align: center;
-}
+        .status-pill {
+            background: var(--status-green);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
 
-th {
-  position: sticky;
-  top: 0;
-  background: #eee;
-}
-</style>
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .announcement-item {
+            padding: 10px;
+            border-left: 3px solid var(--accent-blue);
+            background: rgba(88, 166, 255, 0.1);
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            color: var(--accent-blue);
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+    </style>
 </head>
-
 <body>
 
-<h1>🖥 NOC Portal</h1>
+<div class="container">
+    <header>
+        <div class="logo">
+            <i class="fas fa-server"></i> CNOC PORTAL
+        </div>
+        <div class="status-pill">System Operational</div>
+    </header>
 
-<section>
-<h2>📢 Announcements</h2>
-<div id="announcements"></div>
-</section>
+    <div class="grid">
+        <div class="card">
+            <h2><i class="fas fa-bullhorn"></i> Announcements</h2>
+            <div class="announcement-item">
+                <strong>Scheduled Maintenance</strong><br>
+                <small>Core switch update tonight at 23:00</small>
+            </div>
+            <div class="announcement-item">
+                <strong>Shift Handover</strong><br>
+                <small>Ensure all tickets are updated before 07:00</small>
+            </div>
+        </div>
 
-<section>
-<h2>🗓 Duty Roster</h2>
-<div style="overflow-x:auto">
-<table id="dutyTable"></table>
+        <div class="card">
+            <h2><i class="fas fa-calendar-alt"></i> Duty Roster</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time Slot</th>
+                        <th>Personnel</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>07:00 - 15:00</td>
+                        <td>Jhayvee Maranan</td>
+                        <td>Lead Engineer</td>
+                    </tr>
+                    <tr>
+                        <td>15:00 - 23:00</td>
+                        <td>Team Member B</td>
+                        <td>Monitoring</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
-</section>
-
-<script>
-const BASE_URL = "https://script.google.com/a/macros/unitydigitalinfra.com/s/AKfycbxMMhG9lgn8guhi2NaupRclahAUJynpSl9tGUbv27EskrNuFtjzOKIAk5AhoWz0d2iQQw/exec";
-const USER = "Jhayvee";
-
-/* ANNOUNCEMENTS */
-async function loadAnnouncements() {
-  const res = await fetch(BASE_URL + "?type=announcements");
-  const data = await res.json();
-  const div = document.getElementById("announcements");
-  div.innerHTML = "";
-
-  data.reverse().forEach(a => {
-    div.innerHTML += `
-      <div class="announcement ${a.Priority}">
-        <b>${a.Title}</b>
-        <p>${a.Message}</p>
-        <button onclick="ack('${a.Title}')">👁 Seen</button>
-        <small><br>Seen by: ${a["Seen By"] || "None"}</small>
-      </div>`;
-  });
-}
-
-function ack(title) {
-  fetch(BASE_URL, {
-    method: "POST",
-    body: JSON.stringify({ title, user: USER })
-  }).then(loadAnnouncements);
-}
-
-/* DUTY MATRIX */
-async function loadDuty() {
-  const res = await fetch(BASE_URL + "?type=duty");
-  const data = await res.json();
-  const table = document.getElementById("dutyTable");
-
-  table.innerHTML = "";
-
-  /* HEADER */
-  let header = "<tr><th>Date</th><th>Day</th>";
-  data[0].duty.forEach(d => header += `<th>${d.name}</th>`);
-  header += "</tr>";
-  table.innerHTML += header;
-
-  /* ROWS */
-  data.forEach(r => {
-    let row = `<tr><td>${r.date}</td><td>${r.day}</td>`;
-    r.duty.forEach(d => row += `<td>${d.shift || ""}</td>`);
-    row += "</tr>";
-    table.innerHTML += row;
-  });
-}
-
-loadAnnouncements();
-loadDuty();
-
-setInterval(loadAnnouncements, 60000);
-setInterval(loadDuty, 60000);
-</script>
 
 </body>
 </html>
