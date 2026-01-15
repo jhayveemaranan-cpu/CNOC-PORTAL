@@ -55,7 +55,7 @@
         </div>
 
         <div class="card">
-            <h2><i class="fas fa-list-alt"></i> Duty Summary</h2>
+            <h2><i class="fas fa-list-alt"></i> CNOC Duty For Today</h2>
             <div id="duty-summary-container" class="loading">Loading summary...</div>
         </div>
     </div>
@@ -92,7 +92,6 @@
                 </div>
             `).join('') : "No active announcements.";
 
-            // FIND TODAY'S ROSTER
             const now = new Date();
             const todayDuty = dutyData.find(row => {
                 const d = new Date(row.date);
@@ -103,7 +102,6 @@
                 summaryContainer.innerHTML = "No roster found for today.";
                 countDisplay.innerHTML = "";
             } else {
-                // GROUP PERSONNEL BY SHIFT
                 const groups = {};
                 let activeCount = 0;
 
@@ -116,13 +114,26 @@
                     }
                 });
 
-                // RENDER SUMMARY DISPLAY
                 countDisplay.innerHTML = `<span class="duty-count-pill">${activeCount} Active on Duty</span>`;
                 
                 if (activeCount === 0) {
                     summaryContainer.innerHTML = "No active shifts found for today.";
                 } else {
-                    summaryContainer.innerHTML = Object.keys(groups).map(shiftTime => `
+                    // 2. Sorting logic for specific order
+                    const shiftOrder = ["6:00AM-6:00PM", "8:30AM-5:30PM", "7:00AM-4:00PM"];
+                    
+                    const sortedShifts = Object.keys(groups).sort((a, b) => {
+                        let indexA = shiftOrder.indexOf(a);
+                        let indexB = shiftOrder.indexOf(b);
+                        
+                        // If not in the list, move to the bottom
+                        if (indexA === -1) indexA = 99;
+                        if (indexB === -1) indexB = 99;
+                        
+                        return indexA - indexB;
+                    });
+
+                    summaryContainer.innerHTML = sortedShifts.map(shiftTime => `
                         <div class="summary-section">
                             <div class="shift-header"><i class="far fa-clock"></i> ${shiftTime}</div>
                             ${groups[shiftTime].map(name => `<span class="person-name">${name}</span>`).join('')}
