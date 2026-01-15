@@ -10,109 +10,73 @@
         body { background-color: var(--bg-color); color: var(--text-main); font-family: sans-serif; margin: 0; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; }
         header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 30px; }
-        
-        /* Layout: Duty (2fr) Left, Announcements (1fr) Right */
         .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
         h2 { font-size: 18px; margin-top: 0; display: flex; align-items: center; gap: 10px; color: var(--accent-blue); }
-        
         .announcement-item { padding: 15px; border-left: 4px solid var(--accent-blue); background: rgba(88, 166, 255, 0.1); margin-bottom: 15px; border-radius: 4px; }
-        .announcement-item strong { font-size: 16px; color: #fff; display: block; margin-bottom: 5px; }
-
         .summary-section { margin-bottom: 20px; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 6px; }
         .shift-header { color: var(--accent-blue); font-weight: bold; font-size: 14px; border-bottom: 1px solid var(--border-color); margin-bottom: 8px; padding-bottom: 4px; }
-        
         .person-row { margin-bottom: 12px; padding-left: 10px; }
         .person-name { font-size: 14px; font-weight: bold; display: block; color: #fff; }
         .person-details { font-size: 11px; color: #8b949e; margin-top: 2px; }
-
         .controls { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
         button#refresh-btn { background: #21262d; color: var(--accent-blue); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        button#refresh-btn:hover { background: #30363d; }
-        #last-updated { font-size: 11px; color: #8b949e; font-style: italic; }
+        #last-synced { font-size: 11px; color: #8b949e; font-style: italic; }
         .duty-count-pill { background: var(--status-green); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-left: 10px; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <header>
         <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="font-size: 24px; font-weight: bold; color: var(--accent-blue);">
-                <i class="fas fa-satellite-dish"></i> CNOC PORTAL
-            </div>
+            <div style="font-size: 24px; font-weight: bold; color: var(--accent-blue);"><i class="fas fa-satellite-dish"></i> CNOC PORTAL</div>
             <div id="duty-count-display"></div>
         </div>
         <div class="controls">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <div id="current-date" style="color: #f0f6fc; font-weight: 500;"></div>
-                <button onclick="fetchData()" id="refresh-btn">
-                    <i class="fas fa-sync-alt"></i> Refresh
-                </button>
+                <button onclick="fetchData()" id="refresh-btn"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
-            <div id="last-updated">Waiting for sync...</div>
+            <div id="last-synced">Waiting for sync...</div>
         </div>
     </header>
-
     <div class="grid">
         <div class="card">
             <h2><i class="fas fa-list-alt"></i> CNOC Duty For Today</h2>
             <div id="duty-summary-container" class="loading">Loading roster...</div>
         </div>
-
         <div class="card">
             <h2><i class="fas fa-bullhorn"></i> Important Announcements</h2>
             <div id="announcements-list" class="loading">Fetching updates...</div>
         </div>
     </div>
 </div>
-
 <script>
-    // PASTE YOUR NEW GOOGLE WEB APP URL BELOW
+    // ⚠️ REPLACE THIS URL WITH YOUR NEW DEPLOYMENT URL
     const scriptURL = "https://script.google.com/macros/s/AKfycbx8_vzbbztInIF0EfyXgjVO2w_QhCFzetL5j4pZzb1yqbk6WD8L67-_QuUfdQKExJiW/exec";
 
     async function fetchData() {
         const btn = document.getElementById('refresh-btn');
-        const updateText = document.getElementById('last-updated');
+        const updateText = document.getElementById('last-synced');
         const countDisplay = document.getElementById('duty-count-display');
         const summaryContainer = document.getElementById('duty-summary-container');
-        
         try {
-            btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Updating...';
+            btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Syncing...';
             btn.disabled = true;
-            document.getElementById('current-date').innerText = new Date().toDateString();
-
             const [annRes, dutyRes] = await Promise.all([
                 fetch(`${scriptURL}?type=announcements`),
                 fetch(`${scriptURL}?type=duty`)
             ]);
-            
             const announcements = await annRes.json();
             const dutyData = await dutyRes.json();
-
-            // RENDER ANNOUNCEMENTS
-            document.getElementById('announcements-list').innerHTML = announcements.length ? announcements.map(a => `
-                <div class="announcement-item">
-                    <strong>${a.Title || 'Alert'}</strong>
-                    <p style="margin: 5px 0;">${a.Message || ''}</p>
-                    <small style="color:#8b949e;">Posted by: ${a['Posted By'] || 'Admin'}</small>
-                </div>
-            `).join('') : "No active announcements.";
-
+            document.getElementById('announcements-list').innerHTML = announcements.length ? announcements.map(a => `<div class="announcement-item"><strong>${a.Title}</strong><p style="margin:5px 0;">${a.Message}</p><small style="color:#8b949e;">Posted by: ${a['Posted By']}</small></div>`).join('') : "No active announcements.";
             const now = new Date();
-            const todayDuty = dutyData.find(row => {
-                const d = new Date(row.date);
-                return d.toDateString() === now.toDateString();
-            });
-
+            document.getElementById('current-date').innerText = now.toDateString();
+            const todayDuty = dutyData.find(row => new Date(row.date).toDateString() === now.toDateString());
             if (!todayDuty) {
-                summaryContainer.innerHTML = "No roster found for today.";
-                countDisplay.innerHTML = "";
+                summaryContainer.innerHTML = "No roster found.";
             } else {
-                const groups = {};
-                let activeCount = 0;
-
+                const groups = {}; let activeCount = 0;
                 todayDuty.duty.forEach(p => {
                     const shift = p.shift ? p.shift.trim() : "";
                     if (shift && shift !== "RD" && shift !== "ABSENT") {
@@ -121,41 +85,19 @@
                         groups[shift].push(p);
                     }
                 });
-
-                countDisplay.innerHTML = `<span class="duty-count-pill">${activeCount} Active on Duty</span>`;
-                
+                countDisplay.innerHTML = `<span class="duty-count-pill">${activeCount} Active</span>`;
                 const shiftOrder = ["6:00AM-6:00PM", "8:30AM-5:30PM", "7:00AM-4:00PM"];
-                const sortedShifts = Object.keys(groups).sort((a, b) => {
-                    let idxA = shiftOrder.indexOf(a);
-                    let idxB = shiftOrder.indexOf(b);
-                    if (idxA === -1) idxA = 99;
-                    if (idxB === -1) idxB = 99;
-                    return idxA - idxB;
-                });
-
-                summaryContainer.innerHTML = sortedShifts.map(shiftTime => `
-                    <div class="summary-section">
-                        <div class="shift-header"><i class="far fa-clock"></i> ${shiftTime}</div>
-                        ${groups[shiftTime].map(p => `
-                            <div class="person-row">
-                                <span class="person-name">${p.name}</span>
-                                <div class="person-details">${p.position} | ${p.mobile}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `).join('');
+                const sortedShifts = Object.keys(groups).sort((a,b) => (shiftOrder.indexOf(a) === -1 ? 99 : shiftOrder.indexOf(a)) - (shiftOrder.indexOf(b) === -1 ? 99 : shiftOrder.indexOf(b)));
+                summaryContainer.innerHTML = sortedShifts.map(shiftTime => `<div class="summary-section"><div class="shift-header"><i class="far fa-clock"></i> ${shiftTime}</div>${groups[shiftTime].map(p => `<div class="person-row"><span class="person-name">${p.name}</span><div class="person-details">${p.position} | ${p.mobile}</div></div>`).join('')}</div>`).join('');
             }
-            
-            updateText.innerText = "Last updated: " + new Date().toLocaleTimeString();
+            updateText.innerText = "Last synced: " + now.toLocaleTimeString();
         } catch (e) {
-            console.error(e);
             summaryContainer.innerHTML = "Sync Error. Check Deployment URL.";
         } finally {
             btn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
             btn.disabled = false;
         }
     }
-
     fetchData();
     setInterval(fetchData, 600000); 
 </script>
