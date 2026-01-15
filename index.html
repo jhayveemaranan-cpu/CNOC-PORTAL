@@ -10,7 +10,10 @@
         body { background-color: var(--bg-color); color: var(--text-main); font-family: sans-serif; margin: 0; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; }
         header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 30px; }
-        .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        
+        /* Grid swapped: Duty (2fr) now comes first, Announcements (1fr) second */
+        .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
         h2 { font-size: 18px; margin-top: 0; display: flex; align-items: center; gap: 10px; color: var(--accent-blue); }
         .announcement-item { padding: 15px; border-left: 4px solid var(--accent-blue); background: rgba(88, 166, 255, 0.1); margin-bottom: 15px; border-radius: 4px; }
@@ -49,20 +52,19 @@
 
     <div class="grid">
         <div class="card">
-            <h2><i class="fas fa-bullhorn"></i> Announcements</h2>
-            <div id="announcements-list" class="loading">Fetching updates...</div>
+            <h2><i class="fas fa-list-alt"></i> CNOC Duty For Today</h2>
+            <div id="duty-summary-container" class="loading">Loading summary...</div>
         </div>
 
         <div class="card">
-            <h2><i class="fas fa-list-alt"></i> CNOC Duty For Today</h2>
-            <div id="duty-summary-container" class="loading">Loading summary...</div>
+            <h2><i class="fas fa-bullhorn"></i> Announcements</h2>
+            <div id="announcements-list" class="loading">Fetching updates...</div>
         </div>
     </div>
 </div>
 
 <script>
-    // ⚠️ Replace with your LATEST Google Web App URL
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxqbopQNdxNzw6b_55XvdouQj33oAmavPIkzco8Owsak3RE8lhU-9ULSfWuv5htB9Zg/exec";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwr22JJRWTp82w2wGAbJVp8gz_VUISmzsuLqoKvp7pgOS0eohXiHlKkhlF1OrOlggUX/exec";
 
     async function fetchData() {
         const btn = document.getElementById('refresh-btn');
@@ -128,7 +130,6 @@
                         return idxA - idxB;
                     });
 
-                    // RENDER SUMMARY
                     summaryContainer.innerHTML = sortedShifts.map(shiftTime => `
                         <div class="summary-section">
                             <div class="shift-header"><i class="far fa-clock"></i> ${shiftTime}</div>
@@ -148,7 +149,7 @@
             updateText.innerText = "Last updated: " + new Date().toLocaleTimeString();
         } catch (e) {
             console.error(e);
-            summaryContainer.innerHTML = "Sync Error. Check your App Script Deployment URL and Permissions.";
+            summaryContainer.innerHTML = "Sync Error. Check your App Script Deployment.";
         } finally {
             btn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
             btn.disabled = false;
@@ -156,7 +157,7 @@
     }
 
     fetchData();
-    setInterval(fetchData, 600000); // 10-minute auto-refresh
+    setInterval(fetchData, 600000); 
 </script>
 
 </body>
