@@ -8,26 +8,27 @@
     <style>
         :root { --bg-color: #0d1117; --card-bg: #161b22; --text-main: #c9d1d9; --accent-blue: #58a6ff; --status-green: #238636; --border-color: #30363d; }
         body { background-color: var(--bg-color); color: var(--text-main); font-family: sans-serif; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1400px; margin: 0 auto; }
         header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 30px; }
         
-        /* Layout: Announcements (2fr) Left, Duty (1fr) Right */
+        /* Layout: Duty (2fr) Left, Announcements (1fr) Right */
         .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
         
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
         h2 { font-size: 18px; margin-top: 0; display: flex; align-items: center; gap: 10px; color: var(--accent-blue); }
         
-        /* Larger Announcement Items for Visibility */
-        .announcement-item { padding: 20px; border-left: 5px solid var(--accent-blue); background: rgba(88, 166, 255, 0.08); margin-bottom: 20px; border-radius: 6px; }
-        .announcement-item strong { font-size: 18px; display: block; margin-bottom: 8px; }
-        .announcement-item p { font-size: 15px; line-height: 1.5; margin: 10px 0; }
+        .announcement-item { padding: 15px; border-left: 4px solid var(--accent-blue); background: rgba(88, 166, 255, 0.1); margin-bottom: 15px; border-radius: 4px; }
+        .announcement-item strong { font-size: 16px; color: #fff; display: block; margin-bottom: 5px; }
 
         .summary-section { margin-bottom: 20px; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 6px; }
-        .shift-header { color: var(--accent-blue); font-weight: bold; font-size: 13px; border-bottom: 1px solid var(--border-color); margin-bottom: 8px; padding-bottom: 4px; }
-        .person-name { font-size: 13px; display: block; line-height: 1.4; }
+        .shift-header { color: var(--accent-blue); font-weight: bold; font-size: 14px; border-bottom: 1px solid var(--border-color); margin-bottom: 8px; padding-bottom: 4px; }
+        
+        .person-row { margin-bottom: 12px; padding-left: 10px; }
+        .person-name { font-size: 14px; font-weight: bold; display: block; color: #fff; }
+        .person-details { font-size: 11px; color: #8b949e; margin-top: 2px; }
 
         .controls { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
-        button#refresh-btn { background: #21262d; color: var(--accent-blue); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: 0.3s; font-weight: 600; }
+        button#refresh-btn { background: #21262d; color: var(--accent-blue); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
         button#refresh-btn:hover { background: #30363d; }
         #last-updated { font-size: 11px; color: #8b949e; font-style: italic; }
         .duty-count-pill { background: var(--status-green); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-left: 10px; }
@@ -50,25 +51,26 @@
                     <i class="fas fa-sync-alt"></i> Refresh
                 </button>
             </div>
-            <div id="last-updated">Waiting for first sync...</div>
+            <div id="last-updated">Waiting for sync...</div>
         </div>
     </header>
 
     <div class="grid">
         <div class="card">
-            <h2><i class="fas fa-bullhorn"></i> Important Announcements</h2>
-            <div id="announcements-list" class="loading">Fetching critical updates...</div>
+            <h2><i class="fas fa-list-alt"></i> CNOC Duty For Today</h2>
+            <div id="duty-summary-container" class="loading">Loading roster...</div>
         </div>
 
         <div class="card">
-            <h2><i class="fas fa-list-alt"></i> Duty For Today</h2>
-            <div id="duty-summary-container" class="loading">Loading roster...</div>
+            <h2><i class="fas fa-bullhorn"></i> Important Announcements</h2>
+            <div id="announcements-list" class="loading">Fetching updates...</div>
         </div>
     </div>
 </div>
 
 <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbwr22JJRWTp82w2wGAbJVp8gz_VUISmzsuLqoKvp7pgOS0eohXiHlKkhlF1OrOlggUX/exec";
+    // PASTE YOUR NEW GOOGLE WEB APP URL BELOW
+    const scriptURL = "https://script.google.com/macros/s/AKfycbx8_vzbbztInIF0EfyXgjVO2w_QhCFzetL5j4pZzb1yqbk6WD8L67-_QuUfdQKExJiW/exec";
 
     async function fetchData() {
         const btn = document.getElementById('refresh-btn');
@@ -89,11 +91,11 @@
             const announcements = await annRes.json();
             const dutyData = await dutyRes.json();
 
-            // RENDER ANNOUNCEMENTS - Larger font for primary action
+            // RENDER ANNOUNCEMENTS
             document.getElementById('announcements-list').innerHTML = announcements.length ? announcements.map(a => `
                 <div class="announcement-item">
                     <strong>${a.Title || 'Alert'}</strong>
-                    <p>${a.Message || ''}</p>
+                    <p style="margin: 5px 0;">${a.Message || ''}</p>
                     <small style="color:#8b949e;">Posted by: ${a['Posted By'] || 'Admin'}</small>
                 </div>
             `).join('') : "No active announcements.";
@@ -105,7 +107,7 @@
             });
 
             if (!todayDuty) {
-                summaryContainer.innerHTML = "No roster found.";
+                summaryContainer.innerHTML = "No roster found for today.";
                 countDisplay.innerHTML = "";
             } else {
                 const groups = {};
@@ -120,7 +122,7 @@
                     }
                 });
 
-                countDisplay.innerHTML = `<span class="duty-count-pill">${activeCount} Active</span>`;
+                countDisplay.innerHTML = `<span class="duty-count-pill">${activeCount} Active on Duty</span>`;
                 
                 const shiftOrder = ["6:00AM-6:00PM", "8:30AM-5:30PM", "7:00AM-4:00PM"];
                 const sortedShifts = Object.keys(groups).sort((a, b) => {
@@ -135,19 +137,19 @@
                     <div class="summary-section">
                         <div class="shift-header"><i class="far fa-clock"></i> ${shiftTime}</div>
                         ${groups[shiftTime].map(p => `
-                            <div style="margin-bottom: 10px;">
-                                <div class="person-name" style="font-weight: bold;">${p.name}</div>
-                                <div style="font-size: 10px; color: #8b949e;">${p.position} | ${p.mobile}</div>
+                            <div class="person-row">
+                                <span class="person-name">${p.name}</span>
+                                <div class="person-details">${p.position} | ${p.mobile}</div>
                             </div>
                         `).join('')}
                     </div>
                 `).join('');
             }
             
-            updateText.innerText = "Last synced: " + new Date().toLocaleTimeString();
+            updateText.innerText = "Last updated: " + new Date().toLocaleTimeString();
         } catch (e) {
             console.error(e);
-            summaryContainer.innerHTML = "Sync Error.";
+            summaryContainer.innerHTML = "Sync Error. Check Deployment URL.";
         } finally {
             btn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
             btn.disabled = false;
@@ -157,6 +159,5 @@
     fetchData();
     setInterval(fetchData, 600000); 
 </script>
-
 </body>
 </html>
