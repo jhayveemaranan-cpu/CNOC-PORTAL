@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>NOC Portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body { font-family: Arial; padding: 20px; }
+section { margin-bottom: 30px; }
+
+.announcement {
+  border-left: 5px solid #999;
+  padding: 15px;
+  background: #f9f9f9;
+  margin-bottom: 10px;
+}
+
+.HIGH { border-color: red; }
+.MEDIUM { border-color: orange; }
+.LOW { border-color: green; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 5px;
+  text-align: center;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background: #eee;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🖥 NOC Portal</h1>
+
+<section>
+<h2>📢 Announcements</h2>
+<div id="announcements"></div>
+</section>
+
+<section>
+<h2>🗓 Duty Roster</h2>
+<div style="overflow-x:auto">
+<table id="dutyTable"></table>
+</div>
+</section>
+
+<script>
+const BASE_URL = "https://script.google.com/a/macros/unitydigitalinfra.com/s/AKfycbxMMhG9lgn8guhi2NaupRclahAUJynpSl9tGUbv27EskrNuFtjzOKIAk5AhoWz0d2iQQw/exec";
+const USER = "Jhayvee";
+
+/* ANNOUNCEMENTS */
+async function loadAnnouncements() {
+  const res = await fetch(BASE_URL + "?type=announcements");
+  const data = await res.json();
+  const div = document.getElementById("announcements");
+  div.innerHTML = "";
+
+  data.reverse().forEach(a => {
+    div.innerHTML += `
+      <div class="announcement ${a.Priority}">
+        <b>${a.Title}</b>
+        <p>${a.Message}</p>
+        <button onclick="ack('${a.Title}')">👁 Seen</button>
+        <small><br>Seen by: ${a["Seen By"] || "None"}</small>
+      </div>`;
+  });
+}
+
+function ack(title) {
+  fetch(BASE_URL, {
+    method: "POST",
+    body: JSON.stringify({ title, user: USER })
+  }).then(loadAnnouncements);
+}
+
+/* DUTY MATRIX */
+async function loadDuty() {
+  const res = await fetch(BASE_URL + "?type=duty");
+  const data = await res.json();
+  const table = document.getElementById("dutyTable");
+
+  table.innerHTML = "";
+
+  /* HEADER */
+  let header = "<tr><th>Date</th><th>Day</th>";
+  data[0].duty.forEach(d => header += `<th>${d.name}</th>`);
+  header += "</tr>";
+  table.innerHTML += header;
+
+  /* ROWS */
+  data.forEach(r => {
+    let row = `<tr><td>${r.date}</td><td>${r.day}</td>`;
+    r.duty.forEach(d => row += `<td>${d.shift || ""}</td>`);
+    row += "</tr>";
+    table.innerHTML += row;
+  });
+}
+
+loadAnnouncements();
+loadDuty();
+
+setInterval(loadAnnouncements, 60000);
+setInterval(loadDuty, 60000);
+</script>
+
+</body>
+</html>
