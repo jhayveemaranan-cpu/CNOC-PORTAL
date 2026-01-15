@@ -113,6 +113,136 @@
     }
 
     fetchData();
+<script>
+
+    // 1. PASTE YOUR NEW URL HERE
+
+    const scriptURL = "https://script.google.com/a/macros/unitydigitalinfra.com/s/AKfycbxMMhG9lgn8guhi2NaupRclahAUJynpSl9tGUbv27EskrNuFtjzOKIAk5AhoWz0d2iQQw/exec";
+
+
+
+    async function fetchData() {
+
+        try {
+
+            document.getElementById('current-date').innerText = new Date().toDateString();
+
+
+
+            // Fetch Data
+
+            const [annRes, dutyRes] = await Promise.all([
+
+                fetch(`${scriptURL}?type=announcements`),
+
+                fetch(`${scriptURL}?type=duty`)
+
+            ]);
+
+            
+
+            const announcements = await annRes.json();
+
+            const dutyData = await dutyRes.json();
+
+
+
+            // RENDER ANNOUNCEMENTS
+
+            const annList = document.getElementById('announcements-list');
+
+            annList.innerHTML = announcements.length ? announcements.map(a => `
+
+                <div class="announcement-item">
+
+                    <strong>${a.Title || 'Alert'}</strong><br>
+
+                    <p style="margin:5px 0;">${a.Message || ''}</p>
+
+                    <small style="color:#8b949e;">${a.Priority || 'Normal'} | ${a['Posted By'] || 'Admin'}</small>
+
+                </div>
+
+            `).join('') : "No active announcements.";
+
+
+
+            // RENDER DUTY ROSTER
+
+            const now = new Date();
+
+            const todayDuty = dutyData.find(row => {
+
+                const d = new Date(row.date);
+
+                return d.toDateString() === now.toDateString();
+
+            });
+
+
+
+            const dutyContainer = document.getElementById('duty-table-container');
+
+            if (!todayDuty) {
+
+                dutyContainer.innerHTML = "No roster found for today.";
+
+            } else {
+
+                dutyContainer.innerHTML = `
+
+                    <table>
+
+                        <thead><tr><th>Personnel</th><th>Shift Status</th></tr></thead>
+
+                        <tbody>
+
+                            ${todayDuty.duty.map(p => `
+
+                                <tr style="${p.shift === 'RD' || p.shift === 'ABSENT' ? 'opacity:0.5' : ''}">
+
+                                    <td><strong>${p.name}</strong></td>
+
+                                    <td><span class="shift-tag" style="background:${getShiftColor(p.shift)}">${p.shift}</span></td>
+
+                                </tr>
+
+                            `).join('')}
+
+                        </tbody>
+
+                    </table>`;
+
+            }
+
+        } catch (e) {
+
+            document.getElementById('duty-table-container').innerHTML = "Connection Error. Check Permissions.";
+
+        }
+
+    }
+
+
+
+    function getShiftColor(shift) {
+
+        if (shift === 'RD') return '#444';
+
+        if (shift.includes('6:00PM')) return '#6f42c1'; // Night
+
+        if (shift.includes('6:00AM')) return '#2188ff'; // Day
+
+        if (shift === 'ABSENT') return '#d73a49'; // Red
+
+        return '#30363d';
+
+    }
+
+
+
+    fetchData();
+
 </script>
 
 </body>
