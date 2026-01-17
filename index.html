@@ -7,49 +7,67 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root { --bg-color: #0d1117; --card-bg: #161b22; --text-main: #c9d1d9; --accent-blue: #58a6ff; --status-green: #238636; --border-color: #30363d; }
-        body { background-color: var(--bg-color); color: var(--text-main); font-family: -apple-system, sans-serif; margin: 0; padding: 20px; }
+        body { background-color: var(--bg-color); color: var(--text-main); font-family: -apple-system, sans-serif; margin: 0; padding: 10px; }
         .container { max-width: 98%; margin: 0 auto; } 
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 30px; }
-        .grid { display: grid; grid-template-columns: 25% 74%; gap: 20px; align-items: start; }
-        .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; min-height: 500px; }
-        .announcement-card { border-top: 4px solid var(--accent-blue); }
-        h2 { font-size: 18px; margin-top: 0; display: flex; align-items: center; gap: 10px; color: var(--accent-blue); text-transform: uppercase; }
-        .announcement-item { padding: 25px; border-left: 6px solid var(--accent-blue); background: rgba(88, 166, 255, 0.05); margin-bottom: 20px; border-radius: 8px; }
-        .announcement-item strong { font-size: 22px; color: #fff; display: block; margin-bottom: 10px; }
-        .announcement-item p { font-size: 16px; line-height: 1.6; color: #e6edf3; }
         
-        /* Acknowledge UI */
-        .seen-box { margin-top: 15px; display: flex; gap: 10px; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
-        select.seen-select { background: #0d1117; color: white; border: 1px solid var(--border-color); padding: 5px; border-radius: 4px; font-size: 12px; }
-        button.ack-btn { background: var(--status-green); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .seen-list { font-size: 11px; color: #8b949e; margin-top: 8px; font-style: italic; }
+        header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .header-left { display: flex; flex-direction: column; gap: 5px; }
+        .contact-info { font-size: 12px; color: #8b949e; line-height: 1.4; }
+        .contact-info i { width: 16px; color: var(--accent-blue); }
 
-        .summary-section { margin-bottom: 15px; padding: 12px; background: rgba(255, 255, 255, 0.03); border-radius: 6px; }
-        .shift-header { color: var(--accent-blue); font-weight: bold; font-size: 13px; border-bottom: 1px solid var(--border-color); margin-bottom: 8px; padding-bottom: 4px; }
-        .person-row { margin-bottom: 10px; padding-left: 5px; }
+        /* MOBILE RESPONSIVE GRID */
+        .grid { display: grid; grid-template-columns: 33% 66%; gap: 20px; align-items: start; }
+        
+        /* Forces single column on phones and tablets */
+        @media (max-width: 1024px) {
+            .grid { grid-template-columns: 1fr; }
+            header { flex-direction: column; align-items: flex-start; }
+            .controls { align-items: flex-start; width: 100%; }
+        }
+
+        .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; min-height: auto; }
+        .announcement-card { border-top: 4px solid var(--accent-blue); }
+        h2 { font-size: 16px; margin-top: 0; display: flex; align-items: center; gap: 10px; color: var(--accent-blue); text-transform: uppercase; }
+        .announcement-item { padding: 15px; border-left: 4px solid var(--accent-blue); background: rgba(88, 166, 255, 0.05); margin-bottom: 15px; border-radius: 8px; }
+        .announcement-item strong { font-size: 18px; color: #fff; display: block; margin-bottom: 5px; }
+        
+        .seen-box { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
+        select.seen-select { background: #0d1117; color: white; border: 1px solid var(--border-color); padding: 5px; border-radius: 4px; font-size: 12px; flex: 1; min-width: 150px; }
+        button.ack-btn { background: var(--status-green); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+
+        .summary-section { margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 6px; }
+        .shift-header { color: var(--accent-blue); font-weight: bold; font-size: 12px; border-bottom: 1px solid var(--border-color); margin-bottom: 8px; padding-bottom: 4px; }
+        .person-row { margin-bottom: 8px; padding-left: 5px; border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 5px; }
         .person-name { font-size: 13px; font-weight: bold; display: block; color: #fff; }
         .person-details { font-size: 11px; color: #8b949e; }
+
         .controls { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
-        button#refresh-btn { background: #21262d; color: var(--accent-blue); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        .duty-count-pill { background: var(--status-green); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        button#refresh-btn { background: #21262d; color: var(--accent-blue); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .duty-count-pill { background: var(--status-green); color: white; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="font-size: 26px; font-weight: bold; color: var(--accent-blue);">
-                <i class="fas fa-satellite-dish"></i> CNOC PORTAL
+        <div class="header-left">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="font-size: 24px; font-weight: bold; color: var(--accent-blue);">
+                    <i class="fas fa-satellite-dish"></i> CNOC PORTAL
+                </div>
+                <div id="duty-count-display"></div>
             </div>
-            <div id="duty-count-display"></div>
+            <div class="contact-info">
+                <div><i class="fas fa-envelope"></i> cnoc.agents@unitydigitalinfra.com</div>
+                <div><i class="fas fa-phone-alt"></i> 09178503539 / 09988608802</div>
+            </div>
         </div>
         <div class="controls">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <div id="current-date" style="color: #f0f6fc; font-weight: 500;"></div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div id="current-date" style="color: #f0f6fc; font-size: 13px;"></div>
                 <button onclick="fetchData()" id="refresh-btn"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
-            <div id="last-updated">Waiting for sync...</div>
+            <div id="last-updated" style="font-size: 11px; color: #8b949e;">Waiting for sync...</div>
         </div>
     </header>
 
@@ -67,7 +85,8 @@
 </div>
 
 <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbwfUgkKT-su76gIBe0dJ3jcVP8WR8FNQZv_4TwNoAG-QltpwaNJG8-mkzBQbsb4jaJj/exec";
+    // Ensure you use your deployed script URL here
+    const scriptURL = "https://script.google.com/macros/s/AKfycbx7DBCXr5NLryc-ryh1fhCSYZimhOdxDIHFRj8HuSXWr4vNvZQl5mjiGGtL6YgLgwuT/exec";
     let staffNames = [];
 
     async function acknowledge(title, selectId) {
@@ -75,21 +94,20 @@
         if (!name) return alert("Please select your name.");
         
         try {
-            const response = await fetch(scriptURL, {
+            await fetch(scriptURL, {
                 method: 'POST',
                 body: JSON.stringify({ title: title, name: name })
             });
-            fetchData(); // Refresh to show updated seen list
+            fetchData(); 
         } catch (e) { alert("Acknowledge failed."); }
     }
 
     async function fetchData() {
         const btn = document.getElementById('refresh-btn');
         try {
-            btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Updating...';
+            btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Syncing...';
             btn.disabled = true;
-            document.getElementById('current-date').innerText = new Date().toDateString();
-
+            
             const [annRes, dutyRes] = await Promise.all([
                 fetch(`${scriptURL}?type=announcements`),
                 fetch(`${scriptURL}?type=duty`)
@@ -98,12 +116,11 @@
             const announcements = await annRes.json();
             const dutyData = await dutyRes.json();
 
-            // Collect names for dropdown
             const now = new Date();
+            document.getElementById('current-date').innerText = now.toDateString();
             const todayDuty = dutyData.find(row => new Date(row.date).toDateString() === now.toDateString());
             staffNames = todayDuty ? todayDuty.duty.map(p => p.name).sort() : [];
 
-            // Render Announcements with Seen By UI
             document.getElementById('announcements-list').innerHTML = announcements.length ? announcements.map((a, idx) => {
                 const selectId = `select-${idx}`;
                 return `
@@ -117,11 +134,12 @@
                         </select>
                         <button class="ack-btn" onclick="acknowledge('${a.Title}', '${selectId}')">Acknowledge</button>
                     </div>
-                    <div class="seen-list"><i class="fas fa-check-circle"></i> Seen by: ${a['Seen By'] || 'None yet'}</div>
+                    <div style="font-size: 10px; color: #8b949e; margin-top: 8px;">
+                        <i class="fas fa-check-circle"></i> Seen by: ${a['Seen By'] || 'None yet'}
+                    </div>
                 </div>`;
             }).join('') : "<p>No active announcements.</p>";
 
-            // Process Duty Section
             if (todayDuty) {
                 const groups = {};
                 let activeCount = 0;
@@ -133,7 +151,7 @@
                         groups[shift].push(p);
                     }
                 });
-                document.getElementById('duty-count-display').innerHTML = `<span class="duty-count-pill">${activeCount} On Duty</span>`;
+                document.getElementById('duty-count-display').innerHTML = `<span class="duty-count-pill">${activeCount} Active</span>`;
                 
                 const shiftOrder = ["6:00AM-6:00PM", "8:30AM-5:30PM", "7:00AM-4:00PM", "6:00PM-6:00AM"];
                 const sortedShifts = Object.keys(groups).sort((a, b) => {
@@ -149,8 +167,7 @@
                             <div class="person-row">
                                 <span class="person-name">${p.name}</span>
                                 <div class="person-details">${p.position || 'NOC'} | ${p.mobile || ''}</div>
-                            </div>
-                        `).join('')}
+                            </div>`).join('')}
                     </div>`).join('');
             }
             document.getElementById('last-updated').innerText = "Last sync: " + new Date().toLocaleTimeString();
